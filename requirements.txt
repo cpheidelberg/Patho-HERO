@@ -1,0 +1,13 @@
+medcat
+medcat[spacy]  # for spacy-based tokenizer
+medcat[meta-cat]  # for MetaCAT
+medcat[deid]  # for DeID models
+medcat[spacy,meta-cat,deid,rel-cat,dict-ner]  # for all of the sbove
+openmed
+pydantic
+pydantic-settings
+pytest
+requests
+sqlalchemy
+torch
+transformers

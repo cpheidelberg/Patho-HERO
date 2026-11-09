@@ -1,0 +1,55 @@
+pipeline:
+  reprocess: false
+  use_gazetteer: true
+  use_regex: true
+  use_negation: true
+  use_llm_fallback: true
+  use_ollama: true
+  use_huggingface: false
+  use_ontology: true                  # true/false: Mapping generell ein/aus
+  ontology_provider: umls        # globaler Default: snowstorm | umls
+  ancestor_depth: 2
+  ontology_provider_per_label:        # optional pro Label überschreiben
+    # TUMORENTITAET: umls
+    # MORPHOLOGIE: snowstorm
+  report_workers: 10
+  mapping_workers: 10
+  ollama_keep_alive: "2m"             # How long Ollama keeps the model in memory after last request (e.g., "5m", "1h", "0" to unload, "-1" to keep forever)
+
+logging:
+  log_dir: "logs/"
+  log_level: "INFO"
+
+import:
+  directory: "/home/chris/sdsHD/sd21c015/DataBaseReports/2024_anonymized/"
+  pattern: "*.txt"
+  recursive: false
+  limit: 20000
+  encodings: ["utf-8", "cp1252", "latin-1"]   # Reihenfolge = Fallback-Kette
+  # Optional: Metadaten aus Dateinamen extrahieren (benannte Gruppen).
+  # Beispiel für "E12345_2023.txt" – an dein Schema anpassen oder null setzen:
+  # filename_pattern: '(?P<case_id>[A-Z]\d+)[_-](?P<year>\d{4})'
+
+# Label → SNOMED ECL-Hierarchie (Einschränkung der Suche)
+label_ecl:
+  PROBE: "< 64572001 |Disease| OR < 363346000 |Malignant neoplastic disease|"
+  MACRO_MORPHOLOGY: "< 49755003 |Morphologically abnormal structure|"
+  MICRO_MORPHOLOGY: "< 49755003 |Morphologically abnormal structure|"
+  LOCALISATION: "< 123037004 |Body structure|"
+  PROBE_TYPE: "< 123038009 |Specimen|"
+  PROCEDURE: "< 71388002 |Procedure|"
+  STAINING: "< 127790008 |Staining method|"
+  IHC_MARKER: "< 105590001 |Substance|"
+
+negation:
+  window_tokens: 6
+  triggers: ["kein", "keine", "keinen", "kein Anhalt für",
+             "nicht nachweisbar", "ohne Hinweis auf", "ohne Nachweis", "frei von"]
+  uncertainty_triggers: ["Verdacht auf", "möglicherweise", "fraglich",
+                         "kann nicht ausgeschlossen werden"]
+
+regex:
+  icdo: 'M-\d{4}/\d'
+  tnm: '\b[ypcr]{0,2}T(is|[0-4X])[a-d]?\s*N([0-3X])[a-d]?\s*M([01X])\b'
+  # Maße als EINER Span, Einheit am ENDE (z. B. "1,2 x 1,7 x 0,9 cm").
+  groesse: '\d+([,.]\d+)?\s*(?:x\s*\d+([,.]\d+)?\s*)*(?:cm|mm|ml)\b'

@@ -1,0 +1,40 @@
+logging:
+  log_dir: "logs/"
+  log_level: "DEBUG"
+
+hierarchy:
+  # Muss zu dem uebereinstimmen, was src/terminology/mapper.py schreibt.
+  # Der Mapper persistiert Kanten als source=Kind -> target=Vorfahre unter
+  # den Labels "is_a" (direkte Elternkante) und "ancestor_of"
+  # (transitive Kante, distance>=2). "broader_than" wird nirgends
+  # geschrieben - mit diesem Wert liefern beide Clustering-Skripte einen
+  # leeren Graphen, ohne zu fehlschlagen.
+  relation_type: "is_a"
+  max_depth: 20
+  # Confidence ist in dieser Datenbank ein Provenienz-Flag, kein
+  # Kalibrierwert: 1.0 = regelbasiert, 0.5 = LLM. Der Wert 0.60
+  # verwirft daher alle 324.818 LLM-Entitaeten (83%) und laesst nur die
+  # 66.624 Regex-Entitaeten uebrig.
+  min_confidence: 0.50
+
+  excluded_assertions:
+    - absent
+    - negated
+
+  excluded_certainties:
+    - unlikely
+    - excluded
+
+optimization:
+  min_cluster_size: 2
+  max_cluster_size: 50
+  max_pair_samples: 500
+
+  lambda_overlap: 0.35
+  lambda_small_cluster: 0.25
+  lambda_uncovered: 0.40
+
+visualization:
+  out_dir: "results/clustering"
+  width: 1500
+  height: 900
